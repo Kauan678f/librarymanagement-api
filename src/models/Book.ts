@@ -1,9 +1,16 @@
 import db from "../database/connection";
 
+// interfaces
+import IResponseList from "../interfaces/response/IResponseList";
+import IBook from "../interfaces/book/IBook";
+import IResponseErro from "../interfaces/response/IResponseErro";
+//
+
 class Book {
-    async searchAll() : Promise<any> {
+    async searchAll() : Promise<IResponseList<IBook> | IResponseErro> {
         try {
-            let response = await db.select(
+            let response: IBook[];
+            response = await db.select(
                 'book.idBook',
                 'book.title',
                 'book.genre',
@@ -15,20 +22,22 @@ class Book {
                 db.raw("DATE_FORMAT(author.birthDate, '%Y-%m-%d') AS authorBirthDate")
               ).from("book")
               .innerJoin("author", 'book.idAuthor', 'author.idAuthor')
+              .where({genre: "Fantasy"})
+              console.log(response)
             if(response.length <= 0){
                 return {
-                    status: false,
+                    ok: false,
                     messageError: 'Não existe nenhum livro cadastrado no sistema!'
                 }
             }else {
                 return {
-                    status: true,
+                    ok: true,
                     data: response
                 }
             }
         }catch(error: any){
             return {
-                status: false,
+                ok: false,
                 code: error.code,
                 messageError: "Erro no servidor, verifique sua internet, ou tente mais trade"
             }
